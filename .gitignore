@@ -4,3 +4,4 @@ env*/
 .env
 .vs/
 .vscode/
+**/.venv/
