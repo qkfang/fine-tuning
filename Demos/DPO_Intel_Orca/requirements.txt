@@ -13,3 +13,4 @@ azure-ai-evaluation>=1.13.0
 
 # Core libraries
 python-dotenv
+azure-ai-evaluation>=1.13.0

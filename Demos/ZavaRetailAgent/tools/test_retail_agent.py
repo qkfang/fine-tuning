@@ -68,9 +68,9 @@ class AutoApproveRunHandler(RunHandler):
 class RetailAgentTester:
     """Test the retail agent with predefined scenarios."""
     
-    def __init__(self, connection_string=None, model_name=None, mcp_server_url=None):
-        """Initialize the tester with Azure configuration."""
-        self.connection_string = connection_string or os.getenv("AZURE_AI_PROJECT_CONNECTION_STRING")
+    def __init__(self, endpoint=None, model_name=None, mcp_server_url=None):
+        """Initialize the tester with Azure configuration using managed identity."""
+        self.endpoint = endpoint or os.getenv("AZURE_AI_PROJECT_ENDPOINT")
         self.model_name = model_name or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4")
         self.mcp_server_url = mcp_server_url or os.getenv("MCP_SERVER_URL")
         
@@ -93,9 +93,9 @@ Help customers with their orders, returns, and account information."""
         """Test Microsoft Foundry connection."""
         print(f"{Fore.CYAN}Testing Microsoft Foundry connection...{Style.RESET_ALL}")
         
-        if not self.connection_string:
-            print(f"{Fore.RED}✗ Missing AZURE_AI_PROJECT_CONNECTION_STRING{Style.RESET_ALL}")
-            return False
+        # if not self.endpoint:
+        #     print(f"{Fore.RED}✗ Missing AZURE_AI_PROJECT_ENDPOINT{Style.RESET_ALL}")
+        #     return False
         
         if not self.mcp_server_url:
             print(f"{Fore.RED}✗ Missing MCP_SERVER_URL{Style.RESET_ALL}")
@@ -104,7 +104,7 @@ Help customers with their orders, returns, and account information."""
         try:
             credential = DefaultAzureCredential()
             self.project_client = AIProjectClient(
-                endpoint=self.connection_string,
+                endpoint=self.endpoint,
                 credential=credential
             )
             print(f"{Fore.GREEN}✓ Connected to Microsoft Foundry{Style.RESET_ALL}")
@@ -377,11 +377,11 @@ Help customers with their orders, returns, and account information."""
 
 def quick_test() -> bool:
     """Quick test to check if configuration is valid."""
-    connection_string = os.getenv("AZURE_AI_PROJECT_CONNECTION_STRING")
+    endpoint = os.getenv("AZURE_AI_PROJECT_ENDPOINT")
     mcp_server_url = os.getenv("MCP_SERVER_URL")
     
-    if not connection_string:
-        print(f"{Fore.RED}Missing AZURE_AI_PROJECT_CONNECTION_STRING{Style.RESET_ALL}")
+    if not endpoint:
+        print(f"{Fore.RED}Missing AZURE_AI_PROJECT_ENDPOINT{Style.RESET_ALL}")
         return False
     
     if not mcp_server_url:

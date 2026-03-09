@@ -308,8 +308,8 @@ def main(model_name=None, seed=None):
     # Initialize conversation logger
     logger = ConversationLogger()
     
-    # Get configuration
-    connection_string = os.getenv("AZURE_AI_PROJECT_CONNECTION_STRING")
+    # Get configuration (using managed identity via DefaultAzureCredential)
+    endpoint = os.getenv("AZURE_AI_PROJECT_ENDPOINT")
     deployment_name = model_name or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4")
     mcp_server_url = os.getenv("MCP_SERVER_URL")
     
@@ -322,10 +322,10 @@ def main(model_name=None, seed=None):
         temperature = float(os.getenv("TEMPERATURE", "0.7"))
         top_p = float(os.getenv("TOP_P", "0.95"))
     
-    if not connection_string:
-        print(f"{Fore.RED}❌ Error: AZURE_AI_PROJECT_CONNECTION_STRING is required in .env file{Style.RESET_ALL}")
-        print("\nPlease add your Microsoft Foundry project connection string to the .env file:")
-        print("AZURE_AI_PROJECT_CONNECTION_STRING=your-connection-string-here")
+    if not endpoint:
+        print(f"{Fore.RED}❌ Error: AZURE_AI_PROJECT_ENDPOINT is required in .env file{Style.RESET_ALL}")
+        print("\nPlease add your Microsoft Foundry project endpoint to the .env file:")
+        print("AZURE_AI_PROJECT_ENDPOINT=https://your-project.services.ai.azure.com")
         return
     
     if not mcp_server_url:
@@ -335,13 +335,12 @@ def main(model_name=None, seed=None):
         return
     
     try:
-        # Initialize Azure AI Project Client
+        # Initialize Azure AI Project Client with managed identity
         print(f"{Fore.BLUE}📡 Connecting to Microsoft Foundry project...{Style.RESET_ALL}")
         credential = DefaultAzureCredential()
         
-        # Use the full connection string as endpoint
         project_client = AIProjectClient(
-            endpoint=connection_string,
+            endpoint=endpoint,
             credential=credential
         )
         
