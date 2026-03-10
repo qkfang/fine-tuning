@@ -1,4 +1,4 @@
-# Zava Retail Agent
+# Retail Agent
 
 A retail customer service agent built using Azure OpenAI, designed to handle customer inquiries about orders, returns, and product information.
 

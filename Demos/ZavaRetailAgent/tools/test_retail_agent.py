@@ -11,7 +11,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
-from azure.ai.agents.models import RunHandler, ToolApproval
+from azure.ai.agents.models import RunHandler, ToolApproval, McpTool
 from colorama import Fore, Style, init
 
 # Initialize colorama
@@ -65,7 +65,7 @@ class AutoApproveRunHandler(RunHandler):
             return None
 
 
-class RetailAgentTester:
+class BankAgentTester:
     """Test the retail agent with predefined scenarios."""
     
     def __init__(self, endpoint=None, model_name=None, mcp_server_url=None):
@@ -122,15 +122,15 @@ Help customers with their orders, returns, and account information."""
             return False
         
         try:
+            mcp_tool = McpTool(
+                server_label="retail_mcp_server",
+                server_url=self.mcp_server_url
+            )
             self.agent = self.project_client.agents.create_agent(
                 model=self.model_name,
                 name="Test Retail Agent",
                 instructions=self.system_prompt,
-                tools=[{
-                    "type": "mcp",
-                    "server_label": "retail_mcp_server",
-                    "server_url": self.mcp_server_url
-                }],
+                toolset=mcp_tool,
                 temperature=0.0,
                 top_p=1.0
             )
@@ -294,7 +294,13 @@ Help customers with their orders, returns, and account information."""
             print("🤖 Retail Agent Test Suite")
             print("=" * 70)
             print(f"Model: {self.model_name}")
-            print(f"MCP Server: {self.mcp_server_url}\n")
+            print(f"MCP Server: {self.mcp_server_url}")
+            try:
+                import azure.ai.agents
+                print(f"SDK: azure-ai-agents {azure.ai.agents.__version__}")
+            except Exception:
+                pass
+            print()
         else:
             print(f"{Fore.YELLOW}{'='*60}")
             print(f"Retail Agent Test Suite")
@@ -401,7 +407,7 @@ def main():
         print(f"\n{Fore.RED}Configuration check failed. Please set required environment variables.{Style.RESET_ALL}")
         sys.exit(1)
     
-    tester = RetailAgentTester()
+    tester = BankAgentTester()
     results = tester.run_all_tests(notebook_mode=False)
     
     # Exit with error code if any tests failed

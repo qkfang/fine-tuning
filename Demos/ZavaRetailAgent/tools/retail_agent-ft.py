@@ -310,7 +310,7 @@ def main(model_name=None, seed=None):
     
     # Get configuration (using managed identity via DefaultAzureCredential)
     endpoint = os.getenv("AZURE_AI_PROJECT_ENDPOINT")
-    deployment_name = model_name or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4")
+    deployment_name = model_name or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME_FT", "gpt-4")
     mcp_server_url = os.getenv("MCP_SERVER_URL")
     
     # Get model settings with defaults
