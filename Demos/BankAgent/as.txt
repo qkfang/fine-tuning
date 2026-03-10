@@ -1,0 +1,92 @@
+You are given:
+
+1) Reference Policy Args (ordered list of items and orders that must be graded):
+{{item.reference_policy_args}}
+
+2) Reference Policy Outcome (ordered list of correct eligibility + reason for each item):
+{{item.reference_policy_outcome}}
+
+3) Model Output (the assistant's customer-facing message to evaluate):
+{{sample.output_text}}
+
+Your task is to assign an overall numeric score from 0.000 to 1.000. You must grade **each referenced item individually** and then average the item scores.
+
+=============================
+STEP 0 \u00e2\u20ac\u201d HARD REQUIREMENT: ORDER & ITEM ID MATCH
+=============================
+For each referenced item:
+- Extract its order_id and item_id from the reference.
+- The model output MUST contain:
+  \u00e2\u20ac\u00a2 the same order_id (e.g., "W6876713" or "#W6876713")
+  \u00e2\u20ac\u00a2 the same item_id (exact numeric match, formatting optional)
+
+If EITHER the order_id or item_id is missing OR does not match:
+\u00e2\u2020\u2019 This item's score = 0.0 and you MUST NOT apply later steps for this item.
+
+Matching descriptive names alone (e.g., "hiking boots") is NOT sufficient.
+
+=============================
+STEP 1 \u00e2\u20ac\u201d ELIGIBILITY CHECK (CORRECT OR NOT)
+=============================
+If the item passed Step 0, evaluate whether the model clearly communicates eligibility:
+
+Eligible (True) examples:
+- "This item is eligible for return."
+- "You can return this item for store credit."
+- "We can process a return or exchange for this item."
+
+Not eligible (False) examples:
+- "This item is not eligible for return."
+- "We cannot accept a return for this item."
+- "This item is outside the return window for electronics."
+- "You must go through the marketplace seller."
+
+If the model:
+- fails to state or imply eligibility, OR
+- states the WRONG eligibility compared to the reference, OR
+- only asks clarifying questions (e.g., "what is your order ID?"), OR
+- only asks preference (e.g., "would you prefer refund or exchange?") without a decision,
+\u00e2\u2020\u2019 This item's score = 0.0.
+
+If eligibility is correct, proceed to Step 2.
+
+=============================
+STEP 2 \u00e2\u20ac\u201d POLICY JUSTIFICATION CHECK
+=============================
+A "policy justification" means the model connects eligibility to at least one concrete policy detail, such as:
+- Return window / timing ("within 30 days", "outside 15-day electronics window", "VIP 45 days")
+- Category rules ("defective items are eligible", "opened electronics cannot be returned unless defective", "replacement only")
+- Marketplace rules ("must be returned through marketplace seller")
+- Account-level refund restrictions ("store credit only", "refund to gift card only")
+- Any explicit rule explaining WHY eligibility is what it is
+
+If eligibility is correct BUT the model gives **no meaningful policy justification**, the score MUST be 0.5.
+
+If eligibility is correct AND the model includes at least one consistent policy justification, the score MUST be 1.0.
+
+=============================
+ITEM SCORING SUMMARY
+=============================
+For each item:
+- Score 0.0 \u00e2\u2020\u2019 ID mismatch OR wrong/missing eligibility OR only questions/preference
+- Score 0.5 \u00e2\u2020\u2019 IDs correct AND eligibility correct BUT no policy justification
+- Score 1.0 \u00e2\u2020\u2019 IDs correct AND eligibility correct AND includes policy justification
+
+=============================
+MULTI-ITEM FINAL SCORE
+=============================
+Let N = number of referenced items.
+Let item_scores = list of per-item scores.
+Overall score = (sum of item_scores) / N.
+Clamp to [0,1]. Format with up to three decimal places (e.g., 0.000, 0.500, 0.800, 1.000).
+
+=============================
+SPECIAL CASE
+=============================
+If ALL items receive 0.0 (no eligibility or all ID mismatches):
+\u00e2\u2020\u2019 Final score MUST be 0.000.
+
+=============================
+OUTPUT FORMAT
+=============================
+Output ONLY the final numeric score (e.g., "0.000", "0.500", "1.000"). No explanations.
